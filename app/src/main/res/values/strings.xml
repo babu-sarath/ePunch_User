@@ -1,0 +1,7 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">ePunch</string>
+    <string name="forgot_password">Enter the email associated with your account and we will send an email and instructions to reset your password.</string>
+    <string name="mail_success">We have sent a password recover instructions to your email.</string>
+    <string name="mail_not_recieve">Did not receive the email? Check your spam filter.</string>
+    <string name="change_password">Your new password must be different from the previous used password.</string>
+</resources>

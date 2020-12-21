@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="15dp"
+    tools:context=".Attendance">
+
+    <TextView
+        android:onClick="goBack"
+        android:textSize="25dp"
+        android:padding="8dp"
+        android:drawableLeft="@drawable/ic_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/robotobold"
+        android:text="Employee Attendance" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_marginTop="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="150dp"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="4dp"
+                    android:textSize="12dp"
+                    android:text="Entry Type"/>
+                <Spinner
+                    android:id="@+id/spinner"
+                    android:layout_gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="right">
+                <ImageView
+                    android:layout_margin="5dp"
+                    android:onClick="reset"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_reset"
+                    android:background="@drawable/round_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+                <ImageView
+                    android:layout_margin="5dp"
+                    android:onClick="reload"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_reload"
+                    android:background="@drawable/round_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_marginTop="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <ImageView
+                android:layout_margin="5dp"
+                android:onClick="dateFilter"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_date"
+                android:background="@drawable/round_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:layout_margin="5dp"
+                android:id="@+id/dateText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="From to To"
+                android:fontFamily="@font/robotomedium"
+                android:layout_gravity="center"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="right">
+                <ImageView
+                    android:layout_margin="5dp"
+                    android:onClick="search"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_search"
+                    android:background="@drawable/round_search_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/notFoundAnimation"
+            android:layout_marginTop="15dp"
+            android:layout_gravity="center"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="false"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            app:lottie_rawRes="@raw/empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <ListView
+            android:id="@+id/listView"
+            android:background="@drawable/listview"
+            android:layout_marginTop="15dp"
+            android:padding="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </LinearLayout>
+
+</LinearLayout>
