@@ -155,6 +155,8 @@ public class MainActivity extends AppCompatActivity {
                                     JSONObject jsonObject=response.getJSONObject("user");
                                     sharedPrefClass.setValue_string("username",jsonObject.getString("name"));
                                     sharedPrefClass.setValue_string("email",jsonObject.getString("email"));
+                                    sharedPrefClass.setValue_string("grace",jsonObject.getString("grace"));
+                                    sharedPrefClass.setValue_string("phone",jsonObject.getString("phone"));
                                     startActivity(new Intent(MainActivity.this, Home.class));
                                     finish();
                                 }

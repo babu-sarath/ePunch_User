@@ -40,7 +40,7 @@ import java.util.Map;
 
 public class Settings extends AppCompatActivity {
     SharedPrefClass sharedPrefClass;
-    TextView name,email;
+    TextView name,email,phone;
     String prefEmail;
     RetryPolicy retryPolicy;
     @Override
@@ -50,6 +50,7 @@ public class Settings extends AppCompatActivity {
         sharedPrefClass=new SharedPrefClass(this);
         name=findViewById(R.id.name);
         email=findViewById(R.id.email);
+        phone=findViewById(R.id.phone);
         retryPolicy=new DefaultRetryPolicy(DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
 
         prefEmail=sharedPrefClass.getValue_string("email");
@@ -64,6 +65,7 @@ public class Settings extends AppCompatActivity {
             finish();
         }
         name.setText(sharedPrefClass.getValue_string("username"));
+        phone.setText(sharedPrefClass.getValue_string("phone"));
         email.setText(prefEmail);
     }
 
@@ -187,5 +189,15 @@ public class Settings extends AppCompatActivity {
         //adding the request
         RequestQueue requestQueue= Volley.newRequestQueue(getApplicationContext());
         requestQueue.add(jsonObjectRequest);
+    }
+
+    public void editPhone(View view) {
+        final EditText phoneNo=new EditText(this);
+        AlertDialog.Builder builder=new AlertDialog.Builder(this);
+        builder.setMessage("Update your phone number here.")
+                .setTitle("Update")
+                .setView(phoneNo);
+        AlertDialog alertDialog=builder.create();
+        alertDialog.show();
     }
 }

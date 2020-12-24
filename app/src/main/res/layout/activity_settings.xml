@@ -72,6 +72,24 @@
                 android:textSize="18dp" />
 
             <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="25dp"
+                android:text="Phone Number"
+                android:fontFamily="@font/robotolight"
+                android:textSize="15dp" />
+
+            <TextView
+                android:id="@+id/phone"
+                android:onClick="editPhone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawableRight="@drawable/ic_edit"
+                android:text="Not set"
+                android:fontFamily="@font/robotomedium"
+                android:textSize="18dp" />
+
+            <TextView
                 android:onClick="changePwd"
                 android:id="@+id/changePassword"
                 android:layout_width="match_parent"

@@ -121,7 +121,6 @@ public class Home extends AppCompatActivity {
         //initialize the fused location provider
         fusedLocationStatus=false;
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
         prefEmail=sharedPrefClass.getValue_string("email");
     }
 
@@ -134,68 +133,12 @@ public class Home extends AppCompatActivity {
             finish();
         }else {
                 name.setText(sharedPrefClass.getValue_string("username"));
-                getGrace();
+                int graceInt=Integer.parseInt(sharedPrefClass.getValue_string("grace"));
+                setGrace(graceInt);
                 checkNewDay();
                 checkLocationEnabled();
         }
 
-    }
-
-    private void getGrace() {
-        String apiKey="https://epunchapp.herokuapp.com/auth/grace/"+prefEmail;
-        JsonObjectRequest jsonObjectRequest=new JsonObjectRequest(Request.Method.GET, apiKey, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            if(response.getBoolean("success")){
-                                int graceInt=Integer.parseInt(response.getString("grace"));
-                                setGrace(graceInt);
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                NetworkResponse response=error.networkResponse;
-                if(error instanceof ServerError && response!=null){
-                    try{
-                        String res=new String(response.data, HttpHeaderParser.parseCharset(response.headers, "UTF-8"));
-                        JSONObject object=new JSONObject(res);
-                        Toast.makeText(getApplicationContext(),object.getString("msg"),Toast.LENGTH_LONG).show();
-                        progressDialog.dismiss();
-                    }catch (Exception e){
-                        Log.d("SERVER ERROR ",e.getMessage());
-                    }
-                }
-            }
-        }){
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> headers = new HashMap<>();
-                headers.put("Content-Type", "application/json");
-                headers.put("Authorized", sharedPrefClass.getValue_string("token"));
-                return headers;
-            }
-        };
-
-        jsonObjectRequest.setRetryPolicy(retryPolicy);
-        RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
-
-        requestQueue.add(jsonObjectRequest);
-
-    }
-
-    private void setGrace(int graceInt) {
-        if(graceInt==0 || graceInt==1)
-            graceCard.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.grace_red));
-        else if(graceInt==2)
-            graceCard.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.grace_orange));
-        else
-            graceCard.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.grace_green));
-        grace.setText(String.valueOf(graceInt));
     }
 
     @Override
@@ -214,6 +157,15 @@ public class Home extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        if (fusedLocationStatus) {
+            fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+            fusedLocationStatus=false;
+        }
+        super.onDestroy();
+    }
+
     private void setScannerHeight() {
         //code to set scanner-height based on phone height
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -221,6 +173,62 @@ public class Home extends AppCompatActivity {
         int height = displayMetrics.heightPixels;
         int scannerHeight = (height * 50) / 100;
         scannerView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, scannerHeight));
+    }
+
+//    private void getGrace() {
+//        String apiKey="https://epunchapp.herokuapp.com/auth/grace/"+prefEmail;
+//        JsonObjectRequest jsonObjectRequest=new JsonObjectRequest(Request.Method.GET, apiKey, null,
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        try {
+//                            if(response.getBoolean("success")){
+//                                sharedPrefClass.setValue_string("grace",response.getString("grace"));
+//                                int graceInt=Integer.parseInt(response.getString("grace"));
+//                                setGrace(graceInt);
+//                            }
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//                NetworkResponse response=error.networkResponse;
+//                if(error instanceof ServerError && response!=null){
+//                    try{
+//                        String res=new String(response.data, HttpHeaderParser.parseCharset(response.headers, "UTF-8"));
+//                        JSONObject object=new JSONObject(res);
+//                        Toast.makeText(getApplicationContext(),object.getString("msg"),Toast.LENGTH_LONG).show();
+//                    }catch (Exception e){
+//                        Log.d("SERVER ERROR ",e.getMessage());
+//                    }
+//                }
+//            }
+//        }){
+//            @Override
+//            public Map<String, String> getHeaders() throws AuthFailureError {
+//                HashMap<String, String> headers = new HashMap<>();
+//                headers.put("Content-Type", "application/json");
+//                headers.put("Authorized", sharedPrefClass.getValue_string("token"));
+//                return headers;
+//            }
+//        };
+//
+//        jsonObjectRequest.setRetryPolicy(retryPolicy);
+//        RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
+//        requestQueue.add(jsonObjectRequest);
+//
+//    }
+
+    private void setGrace(int graceInt) {
+        if(graceInt==0 || graceInt==1)
+            graceCard.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.grace_red));
+        else if(graceInt==2)
+            graceCard.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.grace_orange));
+        else
+            graceCard.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.grace_green));
+        grace.setText(String.valueOf(graceInt));
     }
 
     private void checkNewDay() {
@@ -246,8 +254,9 @@ public class Home extends AppCompatActivity {
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-        }else
+        }else{
             sharedPrefClass.setValue_string("dateRecord",currentDateStr);   //if app open first time after install, this code runs only once in lifetime
+        }
         getScanTimes();
     }
 
@@ -275,7 +284,6 @@ public class Home extends AppCompatActivity {
                         String res=new String(response.data, HttpHeaderParser.parseCharset(response.headers, "UTF-8"));
                         JSONObject object=new JSONObject(res);
                         Toast.makeText(getApplicationContext(),object.getString("msg"),Toast.LENGTH_LONG).show();
-                        progressDialog.dismiss();
                     }catch (Exception e){
                         Log.d("SERVER ERROR ",e.getMessage());
                     }
@@ -306,6 +314,7 @@ public class Home extends AppCompatActivity {
     }
 
     private void checkLocationEnabled() {
+        progressDialog.show();
         request=new LocationRequest()
                 .setFastestInterval(200)
                 .setInterval(500)
@@ -354,7 +363,6 @@ public class Home extends AppCompatActivity {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION}, 200);
         }else{
-            progressDialog.show();
             locationCallback = new LocationCallback() {
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
@@ -407,7 +415,7 @@ public class Home extends AppCompatActivity {
             }else {
                 AlertDialog.Builder builder=new AlertDialog.Builder(this);
                 builder.setCancelable(false)
-                        .setMessage("You are not near office premises! Cannot perform scan")
+                        .setMessage("Ooops! Seems like you are not near office premises. Try scan again.")
                         .setTitle("Warning!")
                         .setPositiveButton("Retry", new DialogInterface.OnClickListener() {
                             @Override
@@ -464,7 +472,7 @@ public class Home extends AppCompatActivity {
         lon=longitudeTV.getText().toString();
         approxLatitude=lat.substring(0,6);
         approxLongitude=lon.substring(0,6);
-        return approxLatitude.equals(officeLatA) && approxLongitude.equals(officeLongA) || approxLatitude.equals(officeLatB) && approxLongitude.equals(officeLongB);
+        return (approxLatitude.equals(officeLatA) && approxLongitude.equals(officeLongA) ) || (approxLatitude.equals(officeLatB) && approxLongitude.equals(officeLongB));
     }
 
     private String checkOfficeTimings(String currentTime) {
@@ -489,10 +497,14 @@ public class Home extends AppCompatActivity {
                     punchIn.setText(currentTime);
                     sharedPrefClass.setValue_string("scanIn",currentTime);
                     int graceInt=Integer.parseInt(grace.getText().toString());
-                    if(graceInt==0)
+                    if(graceInt==0) {
+                        sharedPrefClass.setValue_string("grace","3");
                         setGrace(3);
-                    else
+                    }
+                    else{
+                        sharedPrefClass.setValue_string("grace",String.valueOf(graceInt-1));
                         setGrace(graceInt-1);
+                    }
                     return "LATE";
                 }else  if(scanTime.after(morningLimit)&&scanTime.before(halfDayLimit)){
                     //half day
@@ -526,7 +538,6 @@ public class Home extends AppCompatActivity {
             public void onResponse(JSONObject response) {
                 try {
                     if(response.getBoolean("success")){
-                        progressDialog.dismiss();
                         createAlert(response.getString("msg"));
                     }
                 } catch (JSONException e) {
@@ -536,7 +547,6 @@ public class Home extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                progressDialog.dismiss();
                 Toast.makeText(getApplicationContext(),error.getMessage(),Toast.LENGTH_LONG).show();
             }
         }){
