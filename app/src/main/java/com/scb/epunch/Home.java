@@ -133,29 +133,10 @@ public class Home extends AppCompatActivity {
             startActivity(new Intent(Home.this, MainActivity.class));
             finish();
         }else {
-//            if(verifyLocation.areThereMockPermissionApps(Home.this)){
-//                AlertDialog.Builder builder=new AlertDialog.Builder(this);
-//                builder.setCancelable(false)
-//                        .setMessage("Cannot use this application when there is a mock location application running in the background!")
-//                        .setTitle("Alert!")
-//                        .setPositiveButton("Okay", new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialog, int which) {
-//                                dialog.dismiss();
-//                                finishAffinity();
-//                            }
-//                        });
-//                AlertDialog alertDialog=builder.create();
-//                alertDialog.show();
-//            }
-//            else {
                 name.setText(sharedPrefClass.getValue_string("username"));
                 getGrace();
                 checkNewDay();
-                getScanTimes();
                 checkLocationEnabled();
-//            }
-
         }
 
     }
@@ -220,6 +201,7 @@ public class Home extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        checkLocationEnabled();
     }
 
     @Override
@@ -228,6 +210,7 @@ public class Home extends AppCompatActivity {
         mCodeScanner.releaseResources();
         if (fusedLocationStatus) {
             fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+            fusedLocationStatus=false;
         }
     }
 
@@ -244,31 +227,28 @@ public class Home extends AppCompatActivity {
         SharedPreferences prefs=getSharedPreferences("user_prefs_epunch", Activity.MODE_PRIVATE);
         String currentDateStr = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
         if(prefs.contains("dateRecord")){
-
             try {
-                Date recordedDate=new SimpleDateFormat("dd/MM/yyyy").parse(sharedPrefClass.getValue_string("dateRecord"));
-                Date currentDate=new SimpleDateFormat("dd/MM/yyyy").parse(currentDateStr);
-                Calendar calOld=Calendar.getInstance();
-                Calendar calNew=Calendar.getInstance();
-                assert recordedDate != null;
-                calOld.setTime(recordedDate);
-                assert currentDate != null;
-                calNew.setTime(currentDate);
-                if(calNew.get(Calendar.MONTH) > calOld.get(Calendar.MONTH)){
-                        //new month
-                        refreshGrace();
+                Date recordedDate=new SimpleDateFormat("dd-MM-yyyy").parse(sharedPrefClass.getValue_string("dateRecord"));
+                Date currentDate=new SimpleDateFormat("dd-MM-yyyy").parse(currentDateStr);
+                if(currentDate.after(recordedDate)){
+                    //reset the ui stuff because new day
+                    sharedPrefClass.clear_specific_pref("scanIn");
+                    sharedPrefClass.clear_specific_pref("scanOut");
+                    punchIn.setText("--:--");
+                    punchOut.setText("--:--");
+                    sharedPrefClass.setValue_string("dateRecord",currentDateStr);
                 }
+                Calendar calendar= Calendar.getInstance();
+                int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+                if(dayOfMonth == 1)
+                    //first day
+                    refreshGrace();
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-
-            if(!sharedPrefClass.getValue_string("dateRecord").equals(currentDateStr)){
-                punchIn.setText("--:--");
-                punchOut.setText("--:--");
-                sharedPrefClass.setValue_string("dateRecord",currentDateStr);
-            }
         }else
             sharedPrefClass.setValue_string("dateRecord",currentDateStr);   //if app open first time after install, this code runs only once in lifetime
+        getScanTimes();
     }
 
     private void refreshGrace() {
@@ -364,7 +344,7 @@ public class Home extends AppCompatActivity {
                 //get current location
                 getCurrentLocation();
             }else if(resultCode==RESULT_CANCELED){
-                Toast.makeText(getApplicationContext(),"Cannot use application without location permission",Toast.LENGTH_LONG).show();
+                createAlert("Cannot use application without location permission");
                 finishAffinity();
             }
         }
@@ -372,7 +352,7 @@ public class Home extends AppCompatActivity {
 
     private void getCurrentLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 200);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION}, 200);
         }else{
             progressDialog.show();
             locationCallback = new LocationCallback() {
@@ -422,25 +402,42 @@ public class Home extends AppCompatActivity {
             if(checkScanLocation()) {
                 String result=checkOfficeTimings(currentTime);
                 if(result!=null){
-                    sendVolleyInsertRequest();
+                    sendVolleyInsertRequest(result);
                 }
             }else {
-                createAlert("You are not near office premises! Cannot Scan");
+                AlertDialog.Builder builder=new AlertDialog.Builder(this);
+                builder.setCancelable(false)
+                        .setMessage("You are not near office premises! Cannot perform scan")
+                        .setTitle("Warning!")
+                        .setPositiveButton("Retry", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                checkLocationEnabled();
+                            }
+                        })
+                        .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                mCodeScanner.startPreview();
+                            }
+                        });
+                AlertDialog alertDialog=builder.create();
+                alertDialog.show();
             }
         }else {
-            Toast.makeText(getApplicationContext(),"Invalid QR code!",Toast.LENGTH_LONG).show();
-            mCodeScanner.startPreview();
+            createAlert("Invalid QR code!");
         }
     }
 
     private void vibrateDevice() {
         Vibrator vibrator=(Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
+        assert vibrator != null;
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) {
-            assert vibrator != null;
             vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE));
         }
         else {
-            assert vibrator != null;
             vibrator.vibrate(100);
         }
     }
@@ -481,7 +478,7 @@ public class Home extends AppCompatActivity {
 
             if(punchIn.getText().toString().equals("--:--")){
                 assert scanTime != null;
-                //it is punchin
+                //it is punch in
                 if(scanTime.after(earlyMorning)&&scanTime.before(morning)){
                     //on time
                     punchIn.setText(currentTime);
@@ -503,11 +500,11 @@ public class Home extends AppCompatActivity {
                     sharedPrefClass.setValue_string("scanIn",currentTime);
                     return "HALF-DAY";
                 }else
-                    //abscent
+                    //absent
                     return "ABSENT";
 
             }else {
-                //it is punchout
+                //it is punch out
                 sharedPrefClass.setValue_string("scanOut",currentTime);
                 punchOut.setText(currentTime);
                 return "EXIT";
@@ -518,11 +515,12 @@ public class Home extends AppCompatActivity {
         return null;
     }
 
-    private void sendVolleyInsertRequest() {
+    private void sendVolleyInsertRequest(String result) {
         String apiKey="https://epunchapp.herokuapp.com/punches/create";
         HashMap<String,String> data=new HashMap<>();
         data.put("email",prefEmail);
         data.put("username",sharedPrefClass.getValue_string("username"));
+        data.put("type",result);
         JsonObjectRequest jsonObjectRequest=new JsonObjectRequest(Request.Method.POST, apiKey, new JSONObject(data), new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
