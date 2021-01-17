@@ -45,7 +45,8 @@ public class ForgotPassword extends AppCompatActivity {
         email=findViewById(R.id.email);
         progressBar=findViewById(R.id.progressBar);
         progressBar.setVisibility(View.INVISIBLE);
-        retryPolicy=new DefaultRetryPolicy(DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+//        retryPolicy=new DefaultRetryPolicy(DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        retryPolicy=new DefaultRetryPolicy(0, -1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
         sharedPrefClass=new SharedPrefClass(this);
     }
 

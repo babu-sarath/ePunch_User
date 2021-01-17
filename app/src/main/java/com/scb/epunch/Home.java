@@ -88,6 +88,7 @@ public class Home extends AppCompatActivity {
     RetryPolicy retryPolicy;
     ProgressDialog progressDialog;
     String prefEmail;
+    int check;
     LinearLayout graceCard;
     private static final String officeLatA = "12.952";
     private static final String officeLongA = "77.638";
@@ -113,10 +114,11 @@ public class Home extends AppCompatActivity {
         verifyLocation=new VerifyLocation();
         mCodeScanner = new CodeScanner(this, scannerView);
         setScannerHeight();
-        progressDialog=new ProgressDialog(Home.this);
+        progressDialog=new ProgressDialog(Home.this,R.style.CustomAlertDialog);
         progressDialog.setCancelable(false);
         progressDialog.setMessage("Fetching location...");
-        retryPolicy=new DefaultRetryPolicy(DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+//        retryPolicy=new DefaultRetryPolicy(DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        retryPolicy=new DefaultRetryPolicy(0, -1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
 
         //initialize the fused location provider
         fusedLocationStatus=false;
@@ -127,6 +129,7 @@ public class Home extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        check=0;
         SharedPreferences prefs=getSharedPreferences("user_prefs_epunch", Activity.MODE_PRIVATE);
         if(!prefs.contains("token")){
             startActivity(new Intent(Home.this, MainActivity.class));
@@ -144,7 +147,7 @@ public class Home extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        checkLocationEnabled();
+//        checkLocationEnabled();
     }
 
     @Override
@@ -377,6 +380,10 @@ public class Home extends AppCompatActivity {
                         String log = Double.toString(longitude);
                         latitudeTV.setText(lat);
                         longitudeTV.setText(log);
+                        if(check==0){
+                            getCurrentLocation();
+                            check=1;
+                        }
                         progressDialog.dismiss();
                     }
                 }
@@ -483,8 +490,8 @@ public class Home extends AppCompatActivity {
             morningLimit = formatter.parse("11:00:00");
             halfDayLimit = formatter.parse("14:30:00");
             scanTime = formatter.parse(currentTime);
-
-            if(punchIn.getText().toString().equals("--:--")){
+            SharedPreferences prefs=getSharedPreferences("user_prefs_epunch", Activity.MODE_PRIVATE);
+            if(!prefs.contains("scanIn")){
                 assert scanTime != null;
                 //it is punch in
                 if(scanTime.after(earlyMorning)&&scanTime.before(morning)){

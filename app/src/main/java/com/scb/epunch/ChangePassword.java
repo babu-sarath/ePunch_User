@@ -55,8 +55,8 @@ public class ChangePassword extends AppCompatActivity {
         text_input_layout_new=findViewById(R.id.text_input_layout_new);
         progressBar.setVisibility(View.INVISIBLE);
         sharedPrefClass=new SharedPrefClass(this);
-        retryPolicy=new DefaultRetryPolicy(DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
-
+//        retryPolicy=new DefaultRetryPolicy(DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        retryPolicy=new DefaultRetryPolicy(0, -1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
         prefEmail=sharedPrefClass.getValue_string("email");
     }
 

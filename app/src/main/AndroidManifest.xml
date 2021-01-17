@@ -16,19 +16,21 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.EPunch">
-        <activity android:name=".ChangePassword"></activity>
+        <activity android:name=".ChangePassword"/>
         <activity android:name=".MailSuccess" />
         <activity android:name=".ForgotPassword" />
         <activity android:name=".Attendance" />
         <activity android:name=".Settings" />
         <activity android:name=".Home" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".SplashScreen"
+            android:theme="@style/SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".MainActivity" android:theme="@style/Theme.EPunch"/>
     </application>
 
 </manifest>
